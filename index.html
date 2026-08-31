@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Penelope's Household</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&display=swap">
+<style>
+  :root {
+    --ground: #191310;
+    --panel: #221a15;
+    --panel-edge: #3a2c21;
+    --ink: #e8dcc4;
+    --ink-dim: #a4937a;
+    --terracotta: #c4622d;
+    --terracotta-bright: #e07b3f;
+    --ochre: #d9a441;
+    --olive: #8a9a5b;
+    --danger: #cf4e3c;
+    --font-display: "Cinzel", "Times New Roman", serif;
+    --font-body: "Alegreya", Georgia, serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.45;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 20px 20px 48px; }
+
+  /* Meander (Greek key) border strip */
+  .meander {
+    height: 14px;
+    background:
+      repeating-linear-gradient(90deg,
+        var(--terracotta) 0 2px, transparent 2px 8px,
+        var(--terracotta) 8px 10px, transparent 10px 16px);
+    border-top: 2px solid var(--terracotta);
+    border-bottom: 2px solid var(--terracotta);
+    opacity: 0.85;
+    margin-bottom: 18px;
+  }
+
+  header.top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.7rem;
+    letter-spacing: 0.06em;
+    margin: 0;
+    color: var(--ochre);
+    text-wrap: balance;
+  }
+  h1 .sub {
+    display: block;
+    font-family: var(--font-body);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 0.95rem;
+    letter-spacing: 0;
+    color: var(--ink-dim);
+    margin-top: 2px;
+  }
+  .season-box { text-align: right; }
+  .season-label {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+  }
+  .season-count { color: var(--ink-dim); font-size: 0.9rem; }
+
+  button {
+    font-family: var(--font-display);
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    border-radius: 3px;
+  }
+  button:focus-visible { outline: 2px solid var(--ochre); outline-offset: 2px; }
+  .btn-end {
+    background: var(--terracotta);
+    color: #1a0f08;
+    border: none;
+    font-size: 1.05rem;
+    font-weight: 700;
+    padding: 12px 28px;
+  }
+  .btn-end:hover { background: var(--terracotta-bright); }
+  .btn-end:disabled { background: var(--panel-edge); color: var(--ink-dim); cursor: default; }
+
+  /* Resource bar */
+  .resources {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .res {
+    background: var(--panel);
+    border: 1px solid var(--panel-edge);
+    border-radius: 4px;
+    padding: 10px 14px;
+  }
+  .res .name {
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+  .res .amt {
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+  .res .delta { font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+  .delta.pos { color: var(--olive); }
+  .delta.neg { color: var(--danger); }
+  .delta.zero { color: var(--ink-dim); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--panel-edge);
+    border-radius: 4px;
+    padding: 14px 16px;
+  }
+  .panel h2 {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ochre);
+    margin: 0 0 4px;
+  }
+  .panel .hint { color: var(--ink-dim); font-size: 0.88rem; font-style: italic; margin: 0 0 10px; }
+
+  .job {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 7px 0;
+    border-top: 1px solid var(--panel-edge);
+  }
+  .job:first-of-type { border-top: none; }
+  .job .jname { flex: 1; }
+  .job .jname b { font-weight: 700; }
+  .job .jdesc { display: block; color: var(--ink-dim); font-size: 0.84rem; }
+  .stepper { display: flex; align-items: center; gap: 8px; }
+  .stepper button {
+    width: 30px; height: 30px;
+    background: var(--ground);
+    color: var(--ink);
+    border: 1px solid var(--panel-edge);
+    font-size: 1.05rem;
+    font-family: var(--font-body);
+    line-height: 1;
+  }
+  .stepper button:hover:not(:disabled) { border-color: var(--terracotta); color: var(--terracotta-bright); }
+  .stepper button:disabled { opacity: 0.35; cursor: default; }
+  .stepper .count {
+    min-width: 26px;
+    text-align: center;
+    font-size: 1.15rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .idle-note { margin-top: 8px; font-size: 0.88rem; color: var(--ink-dim); }
+  .idle-note.warn { color: var(--danger); font-style: italic; }
+
+  .suitor-stat { display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.95rem; }
+  .suitor-stat .v { font-variant-numeric: tabular-nums; font-weight: 700; }
+  .suitor-count { color: var(--danger); }
+
+  .upgrade {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 0;
+    border-top: 1px solid var(--panel-edge);
+  }
+  .upgrade:first-of-type { border-top: none; }
+  .upgrade .udesc { display: block; color: var(--ink-dim); font-size: 0.84rem; }
+  .upgrade button {
+    background: var(--ground);
+    color: var(--ochre);
+    border: 1px solid var(--ochre);
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+  .upgrade button:hover:not(:disabled) { background: var(--ochre); color: #1a0f08; }
+  .upgrade button:disabled { border-color: var(--panel-edge); color: var(--ink-dim); cursor: default; }
+  .upgrade .owned {
+    color: var(--olive);
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+
+  .chronicle { grid-column: 1 / -1; }
+  .log {
+    max-height: 230px;
+    overflow-y: auto;
+    font-size: 0.92rem;
+    display: flex;
+    flex-direction: column-reverse;
+  }
+  .log .entry { padding: 3px 0; border-top: 1px dotted var(--panel-edge); }
+  .log .season-head {
+    font-family: var(--font-display);
+    letter-spacing: 0.08em;
+    color: var(--ochre);
+    font-size: 0.85rem;
+  }
+  .log .bad { color: var(--danger); }
+  .log .good { color: var(--olive); }
+
+  .endbar { display: flex; justify-content: center; margin: 18px 0 6px; }
+
+  /* End-of-game overlay */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(12, 8, 5, 0.88);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    z-index: 10;
+  }
+  .overlay[hidden] { display: none; }
+  .end-card {
+    background: var(--panel);
+    border: 2px solid var(--terracotta);
+    border-radius: 4px;
+    max-width: 560px;
+    padding: 28px 32px;
+    text-align: center;
+  }
+  .end-card h2 {
+    font-family: var(--font-display);
+    color: var(--ochre);
+    font-size: 1.5rem;
+    letter-spacing: 0.08em;
+    margin: 0 0 10px;
+  }
+  .end-card p { color: var(--ink); margin: 8px 0; }
+  .end-card .score { font-size: 1.3rem; font-weight: 700; color: var(--terracotta-bright); font-variant-numeric: tabular-nums; }
+  .end-card button {
+    margin-top: 14px;
+    background: var(--terracotta);
+    color: #1a0f08;
+    border: none;
+    padding: 10px 24px;
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+  .end-card button:hover { background: var(--terracotta-bright); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="meander" aria-hidden="true"></div>
+
+  <header class="top">
+    <h1>Penelope&rsquo;s Household
+      <span class="sub">Odysseus is gone. The estate &mdash; and the suitors &mdash; remain.</span>
+    </h1>
+    <div class="season-box">
+      <div class="season-label" id="seasonLabel"></div>
+      <div class="season-count" id="seasonCount"></div>
+    </div>
+  </header>
+
+  <section class="resources" id="resourceBar" aria-label="Stores"></section>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="menH">
+      <h2 id="menH">Men of the Estate</h2>
+      <p class="hint" id="menHint"></p>
+      <div id="menJobs"></div>
+      <p class="idle-note" id="menIdle"></p>
+    </section>
+
+    <section class="panel" aria-labelledby="womenH">
+      <h2 id="womenH">Women of the Estate</h2>
+      <p class="hint" id="womenHint"></p>
+      <div id="womenJobs"></div>
+      <p class="idle-note" id="womenIdle"></p>
+    </section>
+
+    <section class="panel" aria-labelledby="suitorH">
+      <h2 id="suitorH">The Suitors</h2>
+      <p class="hint">Uninvited, they feast in your hall each season and will not be refused.</p>
+      <div id="suitorPanel"></div>
+    </section>
+
+    <section class="panel" aria-labelledby="upH">
+      <h2 id="upH">Works &amp; Improvements</h2>
+      <p class="hint">Spend wood and cloth to strengthen the estate.</p>
+      <div id="upgradeList"></div>
+    </section>
+
+    <section class="panel chronicle" aria-labelledby="chronH">
+      <h2 id="chronH">Chronicle</h2>
+      <div class="log" id="log" role="log" aria-live="polite"></div>
+    </section>
+  </div>
+
+  <div class="endbar">
+    <button class="btn-end" id="endTurnBtn">End the Season</button>
+  </div>
+
+  <div class="meander" aria-hidden="true"></div>
+</div>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="end-card">
+    <h2 id="endTitle"></h2>
+    <div id="endBody"></div>
+    <button id="restartBtn">Begin Again</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ------------------------------------------------------------------ *
+ * Penelope's Household — household-layer prototype
+ * Turn-based economy: allocate staff, buy upgrades, end the season.
+ * 20 seasons (10 years). No social layer yet.
+ * ------------------------------------------------------------------ */
+
+const TOTAL_TURNS = 20;
+const FAMILY_MOUTHS = 4;          // Penelope, Telemachos, Laertes, Eurykleia
+const GRAIN_PER_MOUTH = 1;
+const CLOTH_WEAR = 2;             // cloth the household wears out per season
+const SHEEP_FOOD_VALUE = 5;       // grain-equivalent when a sheep is slaughtered
+const GRAIN_SPOIL_RATE = 0.10;
+
+const VALUE = { grain: 1, wood: 2, cloth: 3, sheep: 5 };
+
+const RES_META = [
+  { key: "grain", name: "Grain" },
+  { key: "sheep", name: "Sheep" },
+  { key: "wood",  name: "Wood" },
+  { key: "cloth", name: "Cloth" },
+];
+
+const MEN_JOBS = [
+  { key: "farm",    name: "Farming",    desc: "grain for the household" },
+  { key: "shepherd",name: "Shepherding",desc: "tend the flocks; herds grow" },
+  { key: "lumber",  name: "Lumberyard", desc: "wood for improvements" },
+];
+const WOMEN_JOBS = [
+  { key: "farm",  name: "Farming", desc: "grain for the household" },
+  { key: "weave", name: "Weaving", desc: "cloth to wear and to spend" },
+  { key: "serve", name: "Serving", desc: "keep the hall in order" },
+];
+
+const UPGRADES = [
+  { key: "plows",   name: "Bronze Plows",   cost: { wood: 15 },            desc: "+1 grain per farmer" },
+  { key: "terrace", name: "Terraced Fields",cost: { wood: 30, cloth: 8 },  desc: "+2 more grain per farmer" },
+  { key: "fold",    name: "Stone Sheepfold",cost: { wood: 20 },            desc: "shepherds tend 12 sheep, strays halved" },
+  { key: "loom",    name: "The Great Loom", cost: { wood: 12 },            desc: "+1 cloth per weaver" },
+  { key: "granary", name: "Sealed Granary", cost: { wood: 25 },            desc: "grain spoilage halved" },
+];
+
+let S; // game state
+
+function newGame() {
+  S = {
+    turn: 1,
+    over: false,
+    grain: 60, sheep: 30, wood: 12, cloth: 8,
+    men: 10, women: 10,
+    alloc: {
+      men:   { farm: 6, shepherd: 3, lumber: 1 },
+      women: { farm: 2, weave: 4, serve: 4 },
+    },
+    suitors: 6,
+    upgrades: {},
+    disorder: false,   // hall was short of servants last season
+    sickness: 0,       // workers laid up this season
+    log: [],
+  };
+  log(`Ten years have passed since Odysseus sailed for Troy. The estate is yours to keep — and ${S.suitors} suitors have taken seats in your hall.`, "season-head");
+  render();
+}
+
+/* ---------- derived numbers ---------- */
+
+function seasonName(turn) {
+  const year = Math.ceil(turn / 2);
+  return `${turn % 2 === 1 ? "Spring" : "Autumn"}, Year ${year}`;
+}
+
+function grainPerFarmer() {
+  let g = 4;
+  if (S.upgrades.plows) g += 1;
+  if (S.upgrades.terrace) g += 2;
+  return g;
+}
+function clothPerWeaver() { return 2 + (S.upgrades.loom ? 1 : 0); }
+function woodPerLumber()  { return 2; }
+function shepherdCapacity() { return S.upgrades.fold ? 12 : 8; }
+function strayRate() { return S.upgrades.fold ? 0.10 : 0.20; }
+function spoilRate() { return S.upgrades.granary ? GRAIN_SPOIL_RATE / 2 : GRAIN_SPOIL_RATE; }
+
+function servantsNeeded() { return 2 + Math.floor(S.suitors / 3); }
+function householdMouths() { return S.men + S.women + FAMILY_MOUTHS; }
+function suitorGrainDemand() { return S.suitors * 2; }
+function suitorSheepDemand() { return Math.ceil(S.suitors / 3); }
+
+function assigned(group) {
+  return Object.values(S.alloc[group]).reduce((a, b) => a + b, 0);
+}
+function idle(group) {
+  return (group === "men" ? S.men : S.women) - assigned(group);
+}
+
+function productionMultiplier() {
+  let m = 1;
+  if (S.disorder) m -= 0.15;
+  return m;
+}
+
+// Forecast for the resource bar. Sheep growth uses expected values.
+function forecast() {
+  const mult = productionMultiplier();
+  const harvest = S.turn % 2 === 0 ? 1.5 : 1;
+  const farmers = S.alloc.men.farm + S.alloc.women.farm;
+  const grainIn = Math.round(farmers * grainPerFarmer() * harvest * mult);
+  const woodIn  = Math.round(S.alloc.men.lumber * woodPerLumber() * mult);
+  const clothIn = Math.round(S.alloc.women.weave * clothPerWeaver() * mult);
+
+  const tended = Math.min(S.sheep, S.alloc.men.shepherd * shepherdCapacity());
+  const strays = Math.round((S.sheep - tended) * strayRate());
+  const lambs = Math.round(tended * 0.12);
+
+  const grainOut = householdMouths() * GRAIN_PER_MOUTH + suitorGrainDemand()
+    + Math.round(S.grain * spoilRate());
+
+  return {
+    grain: grainIn - grainOut,
+    sheep: lambs - strays - suitorSheepDemand(),
+    wood: woodIn,
+    cloth: clothIn - CLOTH_WEAR,
+  };
+}
+
+/* ---------- season resolution ---------- */
+
+function endSeason() {
+  if (S.over) return;
+  log(`— ${seasonName(S.turn)} draws to a close —`, "season-head");
+
+  // Sickness from last season's event recovers
+  if (S.sickness > 0) {
+    log(`${S.sickness} of the household recover from fever and return to work.`);
+    S.sickness = 0;
+  }
+
+  const mult = productionMultiplier();
+  if (S.disorder) log("With too few hands serving the hall, the whole estate worked poorly this season (−15% production).", "bad");
+
+  // Random event (may modify this season's production)
+  let eventGrainMult = 1;
+  const roll = Math.random();
+  if (roll < 0.08) {
+    eventGrainMult = 1.25;
+    log("Demeter smiles: the fields yield a quarter more than hoped.", "good");
+  } else if (roll < 0.16) {
+    const lost = Math.max(1, Math.round(S.sheep * (S.upgrades.fold ? 0.05 : 0.10)));
+    S.sheep = Math.max(0, S.sheep - lost);
+    log(`Wolves come down from the hills by night. ${lost} sheep are lost.`, "bad");
+  } else if (roll < 0.22) {
+    const repair = Math.min(S.wood, 8);
+    S.wood -= repair;
+    log(`A storm off the sea tears at the roofs. Repairs cost ${repair} wood.`, "bad");
+  } else if (roll < 0.28) {
+    S.cloth += 6;
+    log("Phoenician traders put in at the harbor and pay tribute in fine cloth (+6 cloth).", "good");
+  } else if (roll < 0.34) {
+    S.sickness = 2;
+    log("Fever passes through the servants' quarters. 2 workers will be laid up next season.", "bad");
+  }
+
+  // --- Production ---
+  const harvest = S.turn % 2 === 0 ? 1.5 : 1;
+  const farmers = S.alloc.men.farm + S.alloc.women.farm;
+  const grainIn = Math.round(farmers * grainPerFarmer() * harvest * eventGrainMult * mult);
+  const woodIn  = Math.round(S.alloc.men.lumber * woodPerLumber() * mult);
+  const clothIn = Math.round(S.alloc.women.weave * clothPerWeaver() * mult);
+  S.grain += grainIn;
+  S.wood += woodIn;
+  S.cloth += clothIn;
+
+  const tended = Math.min(S.sheep, S.alloc.men.shepherd * shepherdCapacity());
+  const strays = Math.round((S.sheep - tended) * strayRate());
+  const lambs = Math.round(tended * 0.12);
+  S.sheep += lambs - strays;
+
+  const bits = [`Harvest: +${grainIn} grain`];
+  if (woodIn) bits.push(`+${woodIn} wood`);
+  if (clothIn) bits.push(`+${clothIn} cloth`);
+  if (lambs) bits.push(`+${lambs} lambs`);
+  log(bits.join(", ") + ".");
+  if (strays > 0) log(`${strays} untended sheep strayed into the hills.`, "bad");
+
+  // --- Suitors feast (they help themselves) ---
+  let shortfallValue = 0;
+  const gWant = suitorGrainDemand();
+  const sWant = suitorSheepDemand();
+  const gTaken = Math.min(S.grain, gWant);
+  const sTaken = Math.min(S.sheep, sWant);
+  S.grain -= gTaken;
+  S.sheep -= sTaken;
+  shortfallValue += (gWant - gTaken) * VALUE.grain + (sWant - sTaken) * VALUE.sheep;
+  log(`The ${S.suitors} suitors feast: ${gTaken} grain and ${sTaken} sheep go to their tables.`);
+
+  if (shortfallValue > 0) {
+    // The table came up short: they seize double the difference from the stores.
+    let toSeize = shortfallValue * 2;
+    const seized = [];
+    for (const key of ["cloth", "wood", "sheep", "grain"]) {
+      if (toSeize <= 0) break;
+      const take = Math.min(S[key], Math.ceil(toSeize / VALUE[key]));
+      if (take > 0) {
+        S[key] -= take;
+        toSeize -= take * VALUE[key];
+        seized.push(`${take} ${key}`);
+      }
+    }
+    log(`The feast ran short! Enraged, the suitors ransack the storerooms and carry off ${seized.join(", ") || "what little remains"}.`, "bad");
+  }
+
+  // --- Household eats ---
+  let need = householdMouths() * GRAIN_PER_MOUTH;
+  const grainEaten = Math.min(S.grain, need);
+  S.grain -= grainEaten;
+  need -= grainEaten;
+  if (need > 0) {
+    const slaughter = Math.min(S.sheep, Math.ceil(need / SHEEP_FOOD_VALUE));
+    if (slaughter > 0) {
+      S.sheep -= slaughter;
+      need -= slaughter * SHEEP_FOOD_VALUE;
+      log(`Grain ran out — ${slaughter} sheep were slaughtered to feed the household.`, "bad");
+    }
+  }
+  if (need > 0) {
+    // Hunger: staff slip away in the night
+    const fleeing = Math.min(Math.max(1, Math.ceil(need / 5)), S.men + S.women);
+    for (let i = 0; i < fleeing; i++) {
+      if (S.men >= S.women && S.men > 0) S.men--; else S.women--;
+    }
+    clampAllocations();
+    log(`There was not food enough for every mouth. ${fleeing} of your people abandon the estate in hunger.`, "bad");
+    if (S.men + S.women <= 4) {
+      return endGame(false, "The household has scattered. With no hands left to work the land, the estate of Odysseus collapses into ruin, and the suitors pick it clean.");
+    }
+  }
+
+  // --- Cloth wears out ---
+  S.cloth = Math.max(0, S.cloth - CLOTH_WEAR);
+
+  // --- Spoilage ---
+  const spoiled = Math.round(S.grain * spoilRate());
+  if (spoiled > 0) {
+    S.grain -= spoiled;
+    log(`${spoiled} grain spoiled in the stores.`);
+  }
+
+  // --- Hall order for next season ---
+  const serveShort = servantsNeeded() - Math.min(S.alloc.women.serve, S.women);
+  S.disorder = serveShort > 0;
+  if (S.disorder) log(`The hall wants ${serveShort} more serving women. Disorder will hamper next season's work.`, "bad");
+
+  // --- Word spreads: more suitors arrive ---
+  if (S.turn % 2 === 0 && S.suitors < 15) {
+    S.suitors++;
+    log(`Word of the unclaimed estate spreads. Another suitor arrives — ${S.suitors} now crowd the hall.`, "bad");
+  }
+
+  // --- Advance ---
+  S.turn++;
+  if (S.turn > TOTAL_TURNS) {
+    return endGame(true, null);
+  }
+  render();
+}
+
+function clampAllocations() {
+  for (const group of ["men", "women"]) {
+    const total = group === "men" ? S.men : S.women;
+    const jobs = Object.keys(S.alloc[group]);
+    let over = assigned(group) - total;
+    for (const j of jobs.slice().reverse()) {
+      while (over > 0 && S.alloc[group][j] > 0) { S.alloc[group][j]--; over--; }
+    }
+  }
+}
+
+function wealth() {
+  return S.grain * VALUE.grain + S.sheep * VALUE.sheep
+       + S.wood * VALUE.wood + S.cloth * VALUE.cloth
+       + (S.men + S.women) * 10;
+}
+
+function endGame(survived, reason) {
+  S.over = true;
+  const overlay = document.getElementById("overlay");
+  const title = document.getElementById("endTitle");
+  const body = document.getElementById("endBody");
+  if (survived) {
+    title.textContent = "Ten Years Endured";
+    body.innerHTML =
+      `<p>Through ${TOTAL_TURNS} seasons you have held the estate together — fed your people, endured the suitors, and kept the loom turning.</p>
+       <p>Final wealth of the estate: <span class="score">${wealth()}</span></p>
+       <p><em>Whether Odysseus returns — and what the suitors do next — is a tale for the social layer, yet to be built.</em></p>`;
+  } else {
+    title.textContent = "The Estate Falls";
+    body.innerHTML = `<p>${reason}</p><p><em>Survived ${S.turn - 1} of ${TOTAL_TURNS} seasons.</em></p>`;
+  }
+  overlay.hidden = false;
+  render();
+}
+
+/* ---------- rendering ---------- */
+
+function log(msg, cls) {
+  S.log.push({ msg, cls: cls || "" });
+  const el = document.getElementById("log");
+  const div = document.createElement("div");
+  div.className = "entry" + (cls ? " " + cls : "");
+  div.textContent = msg;
+  el.prepend(div);
+}
+
+function fmtDelta(n) {
+  const cls = n > 0 ? "pos" : n < 0 ? "neg" : "zero";
+  const sign = n > 0 ? "+" : "";
+  return `<span class="delta ${cls}">${sign}${n} next season</span>`;
+}
+
+function render() {
+  document.getElementById("seasonLabel").textContent = S.over && S.turn > TOTAL_TURNS
+    ? "The Tale Ends" : seasonName(Math.min(S.turn, TOTAL_TURNS));
+  document.getElementById("seasonCount").textContent =
+    `Season ${Math.min(S.turn, TOTAL_TURNS)} of ${TOTAL_TURNS}`;
+
+  const f = forecast();
+  document.getElementById("resourceBar").innerHTML = RES_META.map(r => `
+    <div class="res">
+      <div class="name">${r.name}</div>
+      <div class="amt">${S[r.key]}</div>
+      <div>${fmtDelta(f[r.key])}</div>
+    </div>`).join("");
+
+  renderJobs("men", MEN_JOBS, "menJobs");
+  renderJobs("women", WOMEN_JOBS, "womenJobs");
+
+  document.getElementById("menHint").textContent =
+    `${S.men} men. Each farmer: ${grainPerFarmer()} grain (×1.5 in autumn). Each shepherd tends ${shepherdCapacity()} sheep. Each woodsman: ${woodPerLumber()} wood.`;
+  document.getElementById("womenHint").textContent =
+    `${S.women} women. Each farmer: ${grainPerFarmer()} grain. Each weaver: ${clothPerWeaver()} cloth. The hall needs ${servantsNeeded()} serving.`;
+
+  const mi = idle("men"), wi = idle("women");
+  document.getElementById("menIdle").textContent = mi > 0 ? `${mi} men stand idle.` : "All men are at work.";
+  const serveShort = servantsNeeded() - S.alloc.women.serve;
+  const wIdleEl = document.getElementById("womenIdle");
+  if (serveShort > 0) {
+    wIdleEl.textContent = `Short ${serveShort} serving women — the hall will fall into disorder!`;
+    wIdleEl.className = "idle-note warn";
+  } else {
+    wIdleEl.textContent = wi > 0 ? `${wi} women stand idle.` : "All women are at work.";
+    wIdleEl.className = "idle-note";
+  }
+
+  document.getElementById("suitorPanel").innerHTML = `
+    <div class="suitor-stat"><span>In your hall</span><span class="v suitor-count">${S.suitors} suitors</span></div>
+    <div class="suitor-stat"><span>Grain they will eat</span><span class="v">${suitorGrainDemand()}</span></div>
+    <div class="suitor-stat"><span>Sheep they will roast</span><span class="v">${suitorSheepDemand()}</span></div>
+    <div class="suitor-stat"><span>If the feast runs short</span><span class="v">they seize double from the stores</span></div>`;
+
+  document.getElementById("upgradeList").innerHTML = UPGRADES.map(u => {
+    const costTxt = Object.entries(u.cost).map(([k, v]) => `${v} ${k}`).join(" + ");
+    const afford = Object.entries(u.cost).every(([k, v]) => S[k] >= v);
+    const right = S.upgrades[u.key]
+      ? `<span class="owned">Built</span>`
+      : `<button data-upgrade="${u.key}" ${afford && !S.over ? "" : "disabled"}>${costTxt}</button>`;
+    return `<div class="upgrade">
+      <div><b>${u.name}</b><span class="udesc">${u.desc}</span></div>${right}
+    </div>`;
+  }).join("");
+
+  document.getElementById("endTurnBtn").disabled = S.over;
+}
+
+function renderJobs(group, jobs, elId) {
+  const el = document.getElementById(elId);
+  el.innerHTML = jobs.map(j => `
+    <div class="job">
+      <div class="jname"><b>${j.name}</b><span class="jdesc">${j.desc}</span></div>
+      <div class="stepper">
+        <button data-group="${group}" data-job="${j.key}" data-dir="-1" aria-label="Fewer at ${j.name}" ${S.alloc[group][j.key] <= 0 || S.over ? "disabled" : ""}>−</button>
+        <span class="count">${S.alloc[group][j.key]}</span>
+        <button data-group="${group}" data-job="${j.key}" data-dir="1" aria-label="More at ${j.name}" ${idle(group) <= 0 || S.over ? "disabled" : ""}>+</button>
+      </div>
+    </div>`).join("");
+}
+
+/* ---------- input ---------- */
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  if (S.over && btn.id !== "restartBtn") return;
+  if (btn.dataset.group) {
+    const { group, job } = btn.dataset;
+    const dir = parseInt(btn.dataset.dir, 10);
+    if (dir < 0 && S.alloc[group][job] > 0) S.alloc[group][job]--;
+    if (dir > 0 && idle(group) > 0) S.alloc[group][job]++;
+    render();
+  } else if (btn.dataset.upgrade) {
+    const u = UPGRADES.find(x => x.key === btn.dataset.upgrade);
+    if (!u || S.upgrades[u.key]) return;
+    if (!Object.entries(u.cost).every(([k, v]) => S[k] >= v)) return;
+    for (const [k, v] of Object.entries(u.cost)) S[k] -= v;
+    S.upgrades[u.key] = true;
+    log(`${u.name} — built. ${u.desc}.`, "good");
+    render();
+  } else if (btn.id === "endTurnBtn") {
+    endSeason();
+  } else if (btn.id === "restartBtn") {
+    document.getElementById("overlay").hidden = true;
+    document.getElementById("log").innerHTML = "";
+    newGame();
+  }
+});
+
+newGame();
+</script>
+</body>
+</html>
